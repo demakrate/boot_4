@@ -1,0 +1,11 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<table border="1">
+    <tr th:each="user : ${users}">
+        <td th:utext="${user.id}">id</td>
+        <td th:utext="${user.name}">имя</td>
+        <td th:utext="${user.age}">возраст</td>
+        <td th:utext="${user.mail}">mail</td>
+    </tr>
+
+</table>
+</html>

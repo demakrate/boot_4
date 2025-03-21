@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html lang="en">
 <head>
     <title>Spring Security Example</title>
 </head>
 <body>
-<h1>User, welcome spring boot security page!</h1>
+
+<p>Добро пожаловать, <span sec:authentication="principal.name"></span>!</p>
+<p>Ваши роли: <span sec:authentication="principal.authorities"></span></p>
+<p>Ваш возраст: <span sec:authentication="principal.age"></span></p>
+<p>Email: <span sec:authentication="principal.mail"></span></p>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Выход</button>
+</form>
+<div sec:authorize="hasAuthority('ADMIN')">
+    <a href="/admin">Перейти на страницу админа</a>
+</div>
 
 
 </body>

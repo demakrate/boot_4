@@ -1,11 +1,65 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-    <title>Spring Security Example</title>
+    <title>Главная</title>
+    <script>
+        function togglePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            if (panel.style.display === "none" || panel.style.display === "") {
+                panel.style.display = "block";
+            } else {
+                panel.style.display = "none";
+            }
+        }
+    </script>
 </head>
 <body>
-<h1>Welcome to Index PAGE!</h1>
-
-
+<button onclick="togglePanel('loginPanel')">Вход</button>
+<div id="loginPanel" style="display: none">
+    <form th:action="@{/login}" method="post">
+        <div>
+            <label for="mail">Mail:</label>
+            <input type="text" id="mail" name="mail" placeholder="mail" required/>
+        </div>
+        <div>
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required/>
+        </div>
+        <div>
+            <button type="submit">Войти</button>
+        </div>
+    </form>
+</div>
+<button onclick="togglePanel('registerPanel')">Регистрация</button>
+<div id="registerPanel" style="display: none">
+    <form th:action="@{/register}" method="post">
+        <div>
+            <label for="username">Имя пользователя:</label>
+            <input type="Text" id="username" name="name" required/>
+        </div>
+        <div>
+            <label for="age">Возраст:</label>
+            <input type="number" id="age" name="age" required/>
+        </div>
+        <div>
+            <label for="mailReg">Email:</label>
+            <input type="Text" id="mailReg" name="mail" required/>
+        </div>
+        <div>
+            <label for="passwordReg">Пароль:</label>
+            <input type="password" id="passwordReg" name="password" required/>
+        </div>
+        <div>
+            <button type="submit">Зарегистрироваться</button>
+        </div>
+    </form>
+</div>
+<div th:if="${errorMessage}">
+    <p style="color: red;" th:text="${errorMessage}"></p>
+</div>
+<div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+</div>
 </body>
 </html>

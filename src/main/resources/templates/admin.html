@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script>
+        function getAllUsers() {
+            const content = document.getElementById("content");
+            fetch("/getAllUsers").then(response => {
+                if (!response.ok) {
+                    throw new Error("Ошибка загрузки файла");
+                }
+                return response.text();
+            })
+                .then(html => {
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error("Ошибка:", error);
+                    document.getElementById("content").innerHTML = "<p>Не удалось загрузить содержимое.</p>";
+                });
+
+
+        }
+
+
+        window.addEventListener("load", function () {
+            document.getElementById("get").addEventListener("submit", function (event) {
+                const params = new URLSearchParams();
+                event.preventDefault();
+                let id = document.getElementById("getID").value;
+                params.append("id", id);
+                const url = `/getUserByID?${params.toString()}`
+                fetch(url).then(response => {
+                    return response.text()
+                }).then(html => {
+                    document.getElementById("content").innerHTML = html;
+                })
+            })
+        })
+
+
+        window.addEventListener("load", function () {
+            document.getElementById("delete").addEventListener("submit", function (event) {
+                event.preventDefault();
+                let id = document.getElementById("deleteID").value;
+                const url = `/deleteUser`;
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    },
+                    body: `id=${encodeURIComponent(id)}`
+                }).then(response => {
+                    return response.text()
+                }).then(html => {
+                    document.getElementById("content").innerHTML = html;
+                })
+            })
+        })
+
+        window.addEventListener("load", function () {
+            document.getElementById("add").addEventListener("submit", function (event) {
+                event.preventDefault();
+                const name = document.getElementById("name").value;
+                const age = document.getElementById("age").value;
+                const mail = document.getElementById("mail").value;
+                console.log(name);
+                fetch("/addUser", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    },
+                    body: `name=${encodeURIComponent(name)}&age=${encodeURIComponent(age)}
+                    &mail=${encodeURIComponent(mail)}`
+                }).then(response => {
+                    return response.text()
+                }).then(html => {
+                    document.getElementById("content").innerHTML = html;
+                })
+            })
+        })
+
+        window.addEventListener("load", function () {
+            document.getElementById("change").addEventListener("submit", function (event) {
+                event.preventDefault();
+                const id = document.getElementById("changeID").value;
+                const name = document.getElementById("changeName").value;
+                const age = document.getElementById("changeAge").value;
+                const mail = document.getElementById("changeMail").value;
+                fetch("/changeUser", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    },
+                    body: `id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}
+                        &age=${encodeURIComponent(age)}&mail=${encodeURIComponent(mail)}`
+                }).then(response => {
+                    return response.text()
+                }).then(html => {
+                    document.getElementById("content").innerHTML = html;
+                })
+            })
+        })
+
+        function showForm(name) {
+            const form = document.getElementById(name);
+            form.style.display = form.style.display === "block" ? "none" : "block";
+        }
+    </script>
+</head>
+
+
+<body>
+<button onclick="getAllUsers()">Получить всех пользователей</button>
+<button onclick="showForm('getForm')">Получить пользователя по ID</button>
+<button onclick="showForm('deleteForm')">Удалить пользователя по ID</button>
+<button onclick="showForm('addForm')">Добавить пользователя</button>
+<button onclick="showForm('changeForm')">Заменить пользователя</button>
+
+<div id="getForm" style="display: none">
+    <form id="get">
+        <label for="getID">ID:</label>
+        <input type="number" id="getID" name="getID" required>
+        <button type="submit">Получить</button>
+    </form>
+</div>
+
+<div id="addForm" style="display: none">
+    <form id="add">
+        <label for="name">Имя:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="age">Возраст:</label>
+        <input type="number" id="age" name="age" required>
+        <label for="mail">@mail:</label>
+        <input type="text" id="mail" name="mail" required>
+        <button type="submit">Добавить</button>
+    </form>
+</div>
+
+<div id="deleteForm" style="display: none">
+    <form id="delete">
+        <label for="deleteID">ID:</label>
+        <input type="number" id="deleteID" name="deleteID" required>
+        <button type="submit">Удалить</button>
+    </form>
+</div>
+
+<div id="changeForm" style="display: none">
+    <form id="change">
+        <label for="changeID">ID:</label>
+        <input type="number" id="changeID" name="changeID" required>
+        <label for="changeName">Имя:</label>
+        <input type="text" id="changeName" name="name" required>
+        <label for="changeAge">Возраст:</label>
+        <input type="number" id="changeAge" name="age" required>
+        <label for="changeMail">@mail:</label>
+        <input type="text" id="changeMail" name="mail" required>
+        <button type="submit">Заменить</button>
+    </form>
+</div>
+
+<div id="content"></div>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Выход</button>
+</form>
+<div sec:authorize="hasAuthority('USER')">
+    <a href="/user">Перейти на страницу пользователя</a>
+</div>
+
+</body>
+</html>
