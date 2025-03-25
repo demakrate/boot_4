@@ -1,0 +1,36 @@
+html,
+body {
+  height: 100%;
+}
+
+.form-signing {
+  max-width: 330px;
+  padding: 1rem;
+}
+
+.form-signing .form-floating:focus-within {
+  z-index: 2;
+}
+
+.form-signing input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.form-signing input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.error-login-message {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 12px 15px;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}

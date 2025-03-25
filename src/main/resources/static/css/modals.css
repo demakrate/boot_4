@@ -1,0 +1,35 @@
+.modal-sheet .modal-dialog {
+  width: 380px;
+  transition: bottom .75s ease-in-out;
+}
+.modal-sheet .modal-footer {
+
+  padding-bottom: 2rem;
+}
+
+
+.hoverable-switch {
+  width: 2.5em !important;
+  height: 1.5em;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  margin-right: 10px !important;
+}
+
+
+.hoverable-switch:hover:not(:checked) {
+  border-color: #adb5bd !important;
+  background-color: #e9ecef !important;
+}
+
+
+.hoverable-switch:checked {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+
+
+.form-check-label {
+  padding-top: 2px;
+}
+

@@ -1,0 +1,49 @@
+.bi {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+}
+
+
+@media (min-width: 768px) {
+  .sidebar .offcanvas-lg {
+    position: sticky;
+    top: 48px;
+  }
+  .navbar-search {
+    display: block;
+  }
+}
+
+.sidebar .nav-link {
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+.sidebar .nav-link.active {
+  color: #2470dc;
+}
+
+.sidebar-heading {
+  font-size: .75rem;
+}
+
+
+
+.navbar-brand {
+  padding-top: .75rem;
+
+}
+
+.navbar .form-control {
+  padding: .75rem 1rem;
+}
+.hover-bg-effect {
+
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.hover-bg-effect:hover {
+  background-color: darkslateblue !important;
+  color: #e9ecef !important;
+}
