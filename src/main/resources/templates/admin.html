@@ -11,62 +11,144 @@
     <script>
 
         function closeModal() {
+            const modal = document.getElementById("modalWindow");
+            const inputs = modal.querySelectorAll("input");
+            inputs.forEach(value => value.removeAttribute("readonly"));
             document.getElementById("modalWindow").style.display = "none";
         }
 
+        function createActionButton(type) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `btn ${type === 'delete' ? 'btn-danger' : 'btn-primary'} rounded-pill px-1`;
+            button.style.setProperty('--bs-btn-padding-x', '0rem');
+            button.style.setProperty('--bs-btn-padding-y', '0rem');
+            button.textContent = type === 'delete' ? 'Удалить' : 'Заменить';
+            button.onclick = function () {
+                showModal(type, this);
+            };
+            return button;
+        }
+
         function getAllUsers() {
-            const content = document.getElementById("content");
             fetch("/getAllUsers").then(response => {
-                if (!response.ok) {
-                    throw new Error("Ошибка загрузки файла");
+                if (!response.ok) throw new Error("Ошибка сети");
+                return response.json();
+            }).then(data => {
+                const container = document.getElementById('content');
+
+                if (!data) {
+                    container.innerHTML = '<p class="message">Пользователи не найдены.</p>';
+                    return;
                 }
-                return response.text();
+                const allowedFields = ['id', 'name', 'age', 'mail', 'roles'];
+                const rusFields = ['ID', 'Имя', 'Возраст', 'Mail', 'Роли', 'Удалить', 'Заменить'];
+
+                const filteredUsers = data.map(user => {
+                    const filteredUser = {};
+                    allowedFields.forEach(field => {
+                        if (user.hasOwnProperty(field)) {
+                            filteredUser[field] = user[field];
+                        }
+                    });
+                    return filteredUser;
+                });
+
+                const table = document.createElement('table');
+                table.setAttribute("class", "table table-striped table-sm");
+                const headerRow = table.insertRow();
+
+                rusFields.forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                });
+
+                filteredUsers.forEach(user => {
+                    const row = table.insertRow();
+                    Object.values(user).forEach(value => {
+                        if (!Array.isArray(value)) {
+                            const td = document.createElement('td');
+                            td.textContent = value !== null ? value : '—';
+                            row.appendChild(td);
+                        } else {
+                            let roles = '';
+                            value.forEach(role => {
+                                roles += (role['roleName'] + ' ');
+                            })
+                            const td = document.createElement('td');
+                            td.textContent = (roles);
+                            row.appendChild(td);
+                            const tdDelete = document.createElement('td');
+                            const tdChange = document.createElement('td');
+                            tdDelete.appendChild(createActionButton('delete'));
+                            tdChange.appendChild(createActionButton('change'));
+                            row.append(tdDelete);
+                            row.append(tdChange);
+                        }
+                    });
+                });
+                container.innerText = '';
+                container.appendChild(table);
             })
-                .then(html => {
-                    content.innerHTML = html;
-                })
                 .catch(error => {
                     console.error("Ошибка:", error);
-                    document.getElementById("content").innerHTML = "<p>Не удалось загрузить содержимое.</p>";
+                    document.getElementById('content').innerHTML =
+                        '<p class="message">Ошибка загрузки данных.</p>';
                 });
         }
 
         function sendData() {
-            const params = new URLSearchParams();
+            const modal = document.getElementById("modalWindow");
+            const inputs = modal.querySelectorAll("input");
+            const complexObject = {
+                id: null,
+                name: '',
+                age: null,
+                mail: '',
+                password: '',
+                roles: new Set(),
+            };
             let url;
             if (document.getElementById("send").innerText === "Удалить") {
-                params.append('id', document.getElementById("floatingID").value);
+                complexObject.id = document.getElementById("floatingID").value;
                 url = `/deleteUser`;
+                inputs.forEach(value => value.removeAttribute("readonly"));
             } else {
                 if (document.getElementById("send").innerText === "Заменить") {
+                    complexObject.id = document.getElementById("floatingID").value;
                     url = "/changeUser";
-                    params.append('id', document.getElementById("floatingID").value);
                 } else {
                     url = "/addUser";
                 }
-                params.append('password', document.getElementById("floatingPassword").value);
+                complexObject.password = document.getElementById("floatingPassword").value;
                 const adminRole = document.getElementById("adminRole");
                 const userRole = document.getElementById("userRole");
                 if (adminRole.checked) {
-                    params.append('checkedData', adminRole.value)
-                    console.log(adminRole.value);
+                    complexObject.roles.add({id: 1, roleName: "ADMIN"})
                 }
                 if (userRole.checked) {
-                    params.append('checkedData', userRole.value)
-                    console.log(userRole.value);
+                    complexObject.roles.add({id: 2, roleName: "USER"})
                 }
             }
-            params.append('name', document.getElementById("floatingName").value);
-            params.append('age', document.getElementById("floatingAge").value);
-            params.append('mail', document.getElementById("floatingMail").value);
-            params.append('_csrf', document.getElementById("cookie").getAttribute("value"));
+            complexObject.name = document.getElementById("floatingName").value;
+            complexObject.age = document.getElementById("floatingAge").value;
+            complexObject.mail = document.getElementById("floatingMail").value;
+            const payload = {
+                ...complexObject,
+                roles: Array.from(complexObject.roles)
+
+            };
+            console.log(document.getElementById("cookie").getAttribute("value"));
 
             fetch(url, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json',
+                    'X-XSRF-TOKEN': document.getElementById("cookie").getAttribute("value")
                 },
-                body: params
+                body: JSON.stringify(payload)
             }).then(response => {
                 return response.text()
             }).then(html => {
@@ -77,9 +159,10 @@
 
 
         function showModal(funcType, buttonShow) {
+
             const modal = document.getElementById("modalWindow");
-            let buttonSend = document.getElementById("send");
             const inputs = modal.querySelectorAll("input");
+            let buttonSend = document.getElementById("send");
             if (buttonShow.closest("tr") != null) {
                 const row = buttonShow.closest("tr");
                 const cells = row.querySelectorAll("td");
@@ -89,7 +172,7 @@
                 document.getElementById("floatingMail").value = cells[3].textContent;
             }
             if (funcType === "delete") {
-                inputs.forEach(value => value.setAttribute("readonly", true));
+                inputs.forEach(value => value.setAttribute("readonly", true))
                 buttonSend.innerText = "Удалить";
                 buttonSend.setAttribute("class", "btn btn-danger rounded-pill");
                 document.getElementById("IDform").style.display = "block";
@@ -97,7 +180,7 @@
                 document.getElementById("chooseRole").style.display = "none";
                 modal.style.display = "block";
             } else if (funcType === "change") {
-                inputs.forEach(value => value.removeAttribute("readonly"));
+
                 inputs[0].setAttribute("readonly", true);
                 buttonSend.innerText = "Заменить";
                 buttonSend.setAttribute("class", "btn btn-primary rounded-pill");
@@ -109,7 +192,6 @@
                 const form = document.getElementById("sendForm");
                 document.getElementById("content").innerHTML = form.innerHTML;
                 buttonSend = document.getElementById("send");
-                inputs.forEach(value => value.removeAttribute("readonly"));
                 buttonSend.innerText = "Добавить";
                 buttonSend.setAttribute("class", "btn btn-primary rounded-pill");
                 document.getElementById("IDform").style.display = "none";
@@ -152,7 +234,7 @@
                         </li>
                         <li class="nav-item">
                             <div sec:authorize="hasAuthority('USER')">
-                                <a class="nav-link d-flex align-items-center gap-2 hover-bg-effect"  href="/user">
+                                <a class="nav-link d-flex align-items-center gap-2 hover-bg-effect" href="/user">
                                     User
                                 </a>
                             </div>
@@ -229,7 +311,7 @@
             </div>
             <div class="modal-body p-5 pt-0" id="sendForm">
                 <form style="max-width: 400px; margin-left: auto; margin-right: auto">
-                    <div class="form-floating mb-3" id = "IDform">
+                    <div class="form-floating mb-3" id="IDform">
                         <input type="text" class="form-control rounded-3" id="floatingID" name="name"
                                placeholder="ID" readonly>
                         <label for="floatingID">ID</label>
@@ -257,10 +339,12 @@
                     <div class="form-check form-switch align-items-center gap-2" id=chooseRole>
                         <p>Выберите роли:</p>
                         <label class="form-check-label">
-                            <input class="form-check-input m-0 hoverable-switch" type="checkbox" name="options" id="adminRole"  role="switch" value="ADMIN"> ADMIN
+                            <input class="form-check-input m-0 hoverable-switch" type="checkbox" name="options"
+                                   id="adminRole" role="switch" value="ADMIN"> ADMIN
                         </label><br>
                         <label class="form-check-label">
-                            <input class="form-check-input m-0 hoverable-switch" type="checkbox" name="options" id="userRole" role="switch" value="USER"> USER
+                            <input class="form-check-input m-0 hoverable-switch" type="checkbox" name="options"
+                                   id="userRole" role="switch" value="USER"> USER
                         </label>
                     </div>
                     <button type="button" onclick="sendData()"

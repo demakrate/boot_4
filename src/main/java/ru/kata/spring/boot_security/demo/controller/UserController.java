@@ -1,13 +1,14 @@
 package ru.kata.spring.boot_security.demo.controller;
 
 
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.kata.spring.boot_security.demo.db.models.Role;
 import ru.kata.spring.boot_security.demo.db.models.User;
 import ru.kata.spring.boot_security.demo.db.service.UserService;
@@ -15,10 +16,11 @@ import ru.kata.spring.boot_security.demo.repositories.RolesRepository;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 
-@Controller
+@RestController
 public class UserController {
 
     private final UserService service;
@@ -30,13 +32,11 @@ public class UserController {
     }
 
     @GetMapping(value = "/getAllUsers")
-    public String getAll(Model model) {
+    public List<User> getAll() {
         if (!service.getAllUsers().equals(new ArrayList<User>())) {
-            model.addAttribute("users", service.getAllUsers());
-            return ("allUsers");
+            return (service.getAllUsers());
         } else {
-            model.addAttribute("message", "Записи отсутствуют");
-            return ("message");
+            return (null);
         }
     }
 
@@ -48,13 +48,11 @@ public class UserController {
     }
 
     @PostMapping(value = "/addUser")
-    public String addUser(@Valid @ModelAttribute User user, @RequestParam(name = "checkedData", required = false)
-        String[] roles, BindingResult bindingResult, Model model) {
+    public String addUser(@Valid @RequestBody User user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("message", bindingResult.getAllErrors());
-            return ("message");
+            return (bindingResult.getAllErrors().toString());
         }
-        if (roles != null) {
+        /*if (user.getRoles() != null) {
             Role[] rolesArray = new Role[roles.length];
             for (int i = 0; i < rolesArray.length; i++) {
                 rolesArray[i] = rolesRepository.findByRoleName(roles[i]).orElseThrow(()
@@ -62,40 +60,23 @@ public class UserController {
             }
             Set<Role> set = Set.of(rolesArray);
             user.setRoles(set);
-        }
+        }*/
         service.addUser(user);
-        model.addAttribute("message", "Пользователь " + user.getName()
-                + " успешно добавлен");
-
-        return ("message");
+        return ("Пользователь " + user.getName() + " успешно добавлен");
     }
 
     @PostMapping(value = "/deleteUser")
-    public String deleteUser(@ModelAttribute("id") long id, Model model) {
-
-        service.deleteUser(id);
-        model.addAttribute("message", "Пользователь удален");
-        return ("message");
+    public String deleteUser(@Valid @RequestBody User user) {
+        service.deleteUser(user.getId());
+        return ("Пользователь удален");
     }
 
     @PostMapping(value = "/changeUser")
-    public String changeUser(@Valid @ModelAttribute User user, @RequestParam(name = "checkedData", required = false)
-        String[] roles, BindingResult bindingResult, Model model) {
+    public String changeUser(@Valid @RequestBody User user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("message", bindingResult.getAllErrors());
-            return ("message");
-        }
-        if (roles != null) {
-            Role[] rolesArray = new Role[roles.length];
-            for (int i = 0; i < rolesArray.length; i++) {
-                rolesArray[i] = rolesRepository.findByRoleName(roles[i]).orElseThrow(()
-                        -> new RuntimeException("Роль USER не найдена"));
-            }
-            Set<Role> set = Set.of(rolesArray);
-            user.setRoles(set);
+            return (bindingResult.getAllErrors().toString());
         }
         service.changeUser(user);
-        model.addAttribute("message", "Пользователь успешно заменён");
-        return ("message");
+        return ("Пользователь успешно заменён");
     }
 }

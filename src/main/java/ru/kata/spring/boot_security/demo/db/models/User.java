@@ -49,13 +49,15 @@ public class User implements UserDetails {
     @Email
     private String mail;
 
-    @Column
-    @NotBlank
-    private String password;
+
 
     @JoinTable(name = "user_roles")
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
+
+    @Column
+    @NotBlank
+    private String password;
 
 
     public User(String name, int age, String mail, String password) {

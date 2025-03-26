@@ -25,7 +25,6 @@ public class AuthController {
 
     @GetMapping(value = "/")
     public String printWelcome() {
-
         return "index";
     }
 
