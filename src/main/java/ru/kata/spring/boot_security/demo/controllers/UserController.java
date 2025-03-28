@@ -1,5 +1,4 @@
-package ru.kata.spring.boot_security.demo.controller;
-
+package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.kata.spring.boot_security.demo.db.models.User;
-import ru.kata.spring.boot_security.demo.db.service.UserService;
+import ru.kata.spring.boot_security.demo.db.services.UserService;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -35,10 +34,8 @@ public class UserController {
     }
 
     @GetMapping(value = "/getUserByID")
-    public String getUser(@RequestParam long id, Model model) {
-        User user = service.getUserByID(id);
-        model.addAttribute("message", user);
-        return ("message");
+    public User getUser(@RequestParam long id) {
+        return (service.getUserByID(id));
     }
 
     @PostMapping(value = "/addUser")

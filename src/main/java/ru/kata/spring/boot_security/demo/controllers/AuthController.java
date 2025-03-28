@@ -1,25 +1,26 @@
-package ru.kata.spring.boot_security.demo.controller;
+package ru.kata.spring.boot_security.demo.controllers;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.kata.spring.boot_security.demo.db.models.Role;
 import ru.kata.spring.boot_security.demo.db.models.User;
-import ru.kata.spring.boot_security.demo.db.service.UserService;
-import ru.kata.spring.boot_security.demo.service.RegistrationService;
+import ru.kata.spring.boot_security.demo.db.services.RoleService;
+import ru.kata.spring.boot_security.demo.db.services.UserService;
 
 import javax.validation.Valid;
+import java.util.Set;
 
 @Controller
 public class AuthController {
-    private final RegistrationService registrationService;
+    private final RoleService roleService;
     private final UserService userService;
 
-    public AuthController(RegistrationService registrationService, UserService userService) {
-        this.registrationService = registrationService;
+    public AuthController(RoleService roleService, UserService userService) {
+        this.roleService = roleService;
         this.userService = userService;
     }
 
@@ -44,10 +45,11 @@ public class AuthController {
     public String registerUser(@Valid @ModelAttribute User user,
                                RedirectAttributes redirectAttributes) {
         try {
-            registrationService.registerUser(user);
+            user.setRoles((Set<Role>) roleService.getRoleById(1l));
+            userService.addUser(user);
             redirectAttributes.addFlashAttribute("successMessage", "Регистрация прошла успешно");
             return "redirect:/";
-        } catch (DataIntegrityViolationException e) {
+        } catch (RuntimeException e) {
             System.out.println(e);
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Пользователь с такой почтой уже существует");

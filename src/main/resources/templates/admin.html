@@ -122,13 +122,13 @@
                     url = "/addUser";
                 }
                 complexObject.password = document.getElementById("floatingPassword").value;
-                const adminRole = document.getElementById("adminRole");
-                const userRole = document.getElementById("userRole");
+                const adminRole = document.getElementById("ADMIN");
+                const userRole = document.getElementById("USER");
                 if (adminRole.checked) {
-                    complexObject.roles.add({id: 1, roleName: "ADMIN"})
+                    complexObject.roles.add({id: 2, roleName: "ADMIN"})
                 }
                 if (userRole.checked) {
-                    complexObject.roles.add({id: 2, roleName: "USER"})
+                    complexObject.roles.add({id: 1, roleName: "USER"})
                 }
             }
             complexObject.name = document.getElementById("floatingName").value;
@@ -139,7 +139,6 @@
                 roles: Array.from(complexObject.roles)
 
             };
-            console.log(document.getElementById("cookie").getAttribute("value"));
 
             fetch(url, {
                 method: 'POST',
@@ -158,46 +157,66 @@
         }
 
 
-        function showModal(funcType, buttonShow) {
-
+        async function showModal(funcType, buttonShow) {
             const modal = document.getElementById("modalWindow");
-            const inputs = modal.querySelectorAll("input");
             let buttonSend = document.getElementById("send");
-            if (buttonShow.closest("tr") != null) {
-                const row = buttonShow.closest("tr");
-                const cells = row.querySelectorAll("td");
-                document.getElementById("floatingID").value = cells[0].textContent;
-                document.getElementById("floatingName").value = cells[1].textContent;
-                document.getElementById("floatingAge").value = cells[2].textContent;
-                document.getElementById("floatingMail").value = cells[3].textContent;
+            let url = '/getUserByID';
+
+            if (buttonShow?.closest("tr") != null && (funcType === "change" || funcType === "delete")) {
+                const params = new URLSearchParams();
+
+                if (buttonShow.closest("tr") != null) {
+                    let id = buttonShow.closest("tr").querySelectorAll("td")[0].textContent;
+                    params.append("id", id);
+                    url = `/getUserByID?${params.toString()}`;
+                }
+                const response = await fetch(url);
+                const userData = await response.json();
+
+                document.getElementById("floatingID").value = userData.id;
+                document.getElementById("floatingName").value = userData.name;
+                document.getElementById("floatingAge").value = userData.age;
+                document.getElementById("floatingMail").value = userData.mail;
+
+                if (userData.roles && Array.isArray(userData.roles)) {
+                    userData.roles.forEach(role => {
+                        const checkbox = document.getElementById(`${role}`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
             }
+
+            const inputs = modal.querySelectorAll("input");
+
             if (funcType === "delete") {
-                inputs.forEach(value => value.setAttribute("readonly", true))
-                buttonSend.innerText = "Удалить";
-                buttonSend.setAttribute("class", "btn btn-danger rounded-pill");
+                modal.style.display = "block";
+                inputs.forEach(input => input.setAttribute("readonly", true));
+                buttonSend.textContent = "Удалить";
+                buttonSend.className = "btn btn-danger rounded-pill";
                 document.getElementById("IDform").style.display = "block";
                 document.getElementById("passwordForm").style.display = "none";
                 document.getElementById("chooseRole").style.display = "none";
-                modal.style.display = "block";
             } else if (funcType === "change") {
-
+                modal.style.display = "block";
                 inputs[0].setAttribute("readonly", true);
-                buttonSend.innerText = "Заменить";
-                buttonSend.setAttribute("class", "btn btn-primary rounded-pill");
+                buttonSend.textContent = "Заменить";
+                buttonSend.className = "btn btn-primary rounded-pill";
                 document.getElementById("IDform").style.display = "block";
                 document.getElementById("passwordForm").style.display = "block";
                 document.getElementById("chooseRole").style.display = "block";
-                modal.style.display = "block";
             } else {
                 const form = document.getElementById("sendForm");
                 document.getElementById("content").innerHTML = form.innerHTML;
-                buttonSend = document.getElementById("send");
-                buttonSend.innerText = "Добавить";
-                buttonSend.setAttribute("class", "btn btn-primary rounded-pill");
+                let buttonSend = document.getElementById("send");
+                buttonSend.textContent = "Добавить";
+                buttonSend.className = "btn btn-primary rounded-pill";
                 document.getElementById("IDform").style.display = "none";
                 document.getElementById("passwordForm").style.display = "block";
                 document.getElementById("chooseRole").style.display = "block";
             }
+
 
         }
     </script>
@@ -336,15 +355,15 @@
                                placeholder="Пароль">
                         <label for="floatingPassword">Пароль</label>
                     </div>
-                    <div class="form-check form-switch align-items-center gap-2" id=chooseRole>
+                    <div class="form-check form-switch align-items-center gap-2" id="chooseRole">
                         <p>Выберите роли:</p>
                         <label class="form-check-label">
                             <input class="form-check-input m-0 hoverable-switch" type="checkbox" name="options"
-                                   id="adminRole" role="switch" value="ADMIN"> ADMIN
+                                   id="ADMIN" role="switch" value="ADMIN"> ADMIN
                         </label><br>
                         <label class="form-check-label">
                             <input class="form-check-input m-0 hoverable-switch" type="checkbox" name="options"
-                                   id="userRole" role="switch" value="USER"> USER
+                                   id="USER" role="switch" value="USER"> USER
                         </label>
                     </div>
                     <button type="button" onclick="sendData()"
